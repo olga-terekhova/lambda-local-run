@@ -1,0 +1,3 @@
+aws-cli/.aws/credentials
+aws-cli/aws/Cred.json
+pass-credentials/_Params.PS1
