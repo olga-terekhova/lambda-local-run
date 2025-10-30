@@ -25,6 +25,7 @@ lambda-local-run/
     ├── Build-Local-Lambda.ps1
     ├── Get-Credentials-CLI-Container.ps1
     ├── Get-Credentials-CLI-Local.ps1
+    ├── Invoke-Local-Lambda.PS1
     ├── Run-Local-Lambda.ps1
     ├── _Params.ps1
     └── _Params_example.ps1
@@ -46,6 +47,7 @@ lambda-local-run/
 |pass-credentials/Build-Local-Lambda.ps1|Builds the required local Docker images for lambda. Path to a Dockerfile in a different repo should be specified.|
 |pass-credentials/Get-Credentials-CLI-Container.ps1|Uses the aws-cli:test container to assume an AWS role and save temporary credentials (via sts assume-role).|
 |pass-credentials/Get-Credentials-CLI-Local.ps1|Performs the same role-assumption logic as above, but using a locally installed AWS CLI instead of Docker.|
+|pass-credentials/Invoke-Local-Lambda.PS1|Invokes a lambda function and passes a payload from a custom json|
 |pass-credentials/Run-Local-Lambda.ps1|Launches the Lambda-like container locally (e.g., docker run ...) using temporary credentials from JSON. Verifies image presence, injects environment variables to pass credentials, and keeps the session open.|
 |pass-credentials/_Params.ps1|Configuration file defining paths, AWS role ARNs, and environment settings used by the above scripts. Not commited for security reasons.|
 |pass-credentials/_Params_example.ps1|A reference template for _Params.ps1.|
@@ -53,24 +55,23 @@ lambda-local-run/
 
 **User Guide**
 1. (AWS) Set up IAM role and user:
-   - the role will have the same permissions the lambda function is supposed to have, like an access to a specific S3 bucket
-   - the user will have permission to assume this role
+   - the role will have the same permissions the lambda function is supposed to have, like an access to a specific S3 bucket;
+   - the user will have permission to assume this role.
 2. (Local) Set the credentials for the user from Step 1 in aws-cli/.aws/credentials.
 3. (Local) Set the aws-cli/.aws/config by specifying your AWS region and making sure the output is json.
-4. (Local) Locate a local repo with a dockerfile for building a lambda function.
+4. (Local) Locate a local repo with a dockerfile for building a lambda function:
+   - it should implement the local AWS RIE emulator, like [lambda-python-playwright-chromium](https://github.com/olga-terekhova/lambda-python-playwright-chromium).
 5. (Local) Update configuration in pass-credentials/_Params.PS1:
-   - set $LambdaImagePath to the directory from Step 4.
-   - set $RoleARN to the ARN of the role from Step 1. 
-   - set $Region to your AWS region.
-5. (Local, calling AWS) Run AWS CLI to assume the needed role and save temporary credentials:
-   - if you want to use a local installation of AWS CLI, run pass-credentials/Get-Credentials-CLI-Local.ps1
-   - else run pass-credentials/Get-Credentials-CLI-Container.ps1
-6. (Local) Build lambda image by running pass-credentials/Build-Local-Lambda.ps1.
-7. (Local) Run lambda container by running pass-credentials/Run-Local-Lambda.ps1.
-8. (Local, calling AWS) Test invocation of the function by opening another shell window and issuing the command like:
-   ```
-   Invoke-WebRequest -Uri "http://localhost:9000/2015-03-31/functions/function/invocations" -Method Post -Body '{}' -ContentType "application/json"
-   ```
+   - set $LambdaImagePath to the directory from Step 4;
+   - set $RoleARN to the ARN of the role from Step 1;
+   - set $Region to your AWS region;
+   - set $InvokeJsonPath to the path to a JSON containing a payload to test function invocation.  
+6. (Local, calling AWS) Run AWS CLI to assume the needed role and save temporary credentials:
+   - if you want to use a local installation of AWS CLI, run pass-credentials/Get-Credentials-CLI-Local.ps1 ;
+   - else run pass-credentials/Get-Credentials-CLI-Container.ps1 .
+7. (Local) Build lambda image by running pass-credentials/Build-Local-Lambda.ps1.
+8. (Local) Run lambda container by running pass-credentials/Run-Local-Lambda.ps1.
+9. (Local, calling AWS) Test invocation of the function by running pass-credentials/Invoke-Local-Lambda.PS1 in a different terminal window.  
    
 	
 	
