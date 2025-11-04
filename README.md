@@ -52,6 +52,9 @@ lambda-local-run/
 |scripts/_Params.ps1|Configuration file defining paths, AWS role ARNs, and environment settings used by the above scripts. Not commited for security reasons.|
 |scripts/_Params_example.ps1|A reference template for _Params.ps1.|
 	
+**Project Diagram**  
+
+<img src="./docs/diagram/src/diagram.svg" width="800">
 
 **User Guide**
 1. (AWS) Set up IAM role and user:

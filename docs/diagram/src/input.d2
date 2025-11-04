@@ -1,0 +1,151 @@
+vars: {
+  d2-config: {
+    theme-overrides: {
+      B1: "#000000"
+      B2: "#000000"
+      B3: "#ffffff"
+      B4: "#ffffff"
+      B5: "#ffffff"
+      B6: "#ffffff"
+
+      AA2: "#0D47A1"
+      AA4: "#42A5F5"
+      AA5: "#90CAF9"
+
+      AB4: "#F44336"
+      AB5: "#FFCDD2"
+    }
+  }
+}
+
+title: {
+  label: Components
+  near: bottom-center
+  shape: text
+  style.font-size: 40
+}
+
+local: Local {
+    label.near: top-left
+
+    # ===============================
+    # Local Lambda container
+    # ===============================
+    local_lambda: {
+        label: "Local Lambda Container"
+        label.near: top-center
+        icon: docker-svgrepo-com.svg
+        icon.near: top-left
+
+
+                    lambda_module: {
+                        label: "Lambda Function"
+                        label.near: top-center
+                        icon: aws-lambda.svg
+                        icon.near: top-left
+                        width: 400
+                    }
+      
+    }
+
+    # ===============================
+    # AWS CLI container
+    # ===============================
+    aws_cli_container: {
+        label: "AWS-CLI Container"
+        label.near: top-center
+        icon: docker-svgrepo-com.svg
+        icon.near: top-left
+        
+
+        aws_cli_image: "aws-cli Image"
+        
+        aws_configuration: {
+            label: "AWS Configuration Directory"
+            label.near: top-left
+            aws_credentials: "AWS Credentials"
+            aws_config: "AWS Config"
+        }
+        aws_output: {
+            label: "AWS Output Directory"
+            label.near: top-left
+
+            cred_json: "Cred.json" {width: 200}
+        }
+    }
+
+}
+
+aws_cloud: AWS Cloud {
+    label.near: top-left
+
+
+    # ===============================
+    # AWS IAM
+    # ===============================
+    aws_iam: {
+        label: "AWS IAM"
+        label.near: top-center
+        icon: aws-iam.svg
+        icon.near: top-left
+
+        test_user: "test-user"
+        lambda_role: "lambda-role"
+    }
+
+    # ===============================
+    # AWS S3
+    # ===============================
+    aws_s3: {
+        label: "AWS S3"
+        label.near: top-center
+        icon: aws-s3.svg
+        icon.near: top-left
+
+        test_bucket: "test-bucket" {width: 200}
+        
+    }
+}
+# ===============================
+# Connectors
+# ===============================
+
+aws_cloud.aws_iam.lambda_role -> aws_cloud.aws_s3.test_bucket: "1. Can access" {style.opacity: 0.0}
+aws_cloud.aws_iam.test_user -> aws_cloud.aws_iam.lambda_role: "2. Can assume" {style.opacity: 0.0}
+aws_cloud.aws_iam.test_user -> local.aws_cli_container.aws_configuration.aws_credentials: "3. Stores credentials"  {style.opacity: 0.0}
+local.aws_cli_container.aws_cli_image -> local.aws_cli_container.aws_configuration.aws_credentials: "4. Uses credentials" {style.opacity: 0.0}
+local.aws_cli_container.aws_cli_image <-> aws_cloud.aws_iam.lambda_role: "5. Assumes role and gets temporary credentials" {
+    style.opacity: 0.0
+    icon: powershell-svgrepo-com.svg
+    }
+local.aws_cli_container.aws_cli_image -> local.aws_cli_container.aws_output.cred_json:  "6. Writes temporary credentials"  {style.opacity: 0.0
+    icon: powershell-svgrepo-com.svg}
+local.aws_cli_container.aws_output.cred_json -> local.local_lambda.lambda_module: "7. Injects temporary credentials as environment variables" {style.opacity: 0.0
+    icon: powershell-svgrepo-com.svg}
+local.local_lambda.lambda_module -> aws_cloud.aws_s3.test_bucket: "8. Can access" {style.opacity: 0.0}
+
+
+scenarios: {
+    1-setup: {
+        title.label: Setup
+        (aws_cloud.aws_iam.lambda_role -> aws_cloud.aws_s3.test_bucket)[0].style.opacity: 1.0
+        (aws_cloud.aws_iam.test_user -> aws_cloud.aws_iam.lambda_role)[0].style.opacity: 1.0
+        (aws_cloud.aws_iam.test_user -> local.aws_cli_container.aws_configuration.aws_credentials)[0].style.opacity: 1.0
+        (local.aws_cli_container.aws_cli_image -> local.aws_cli_container.aws_configuration.aws_credentials)[0].style.opacity: 1.0
+                (local.aws_cli_container.aws_cli_image <-> aws_cloud.aws_iam.lambda_role)[0].style.opacity: 0.0
+        (local.aws_cli_container.aws_cli_image -> local.aws_cli_container.aws_output.cred_json)[0].style.opacity: 0.0
+        (local.aws_cli_container.aws_output.cred_json -> local.local_lambda.lambda_module)[0].style.opacity: 0.0
+        (local.local_lambda.lambda_module -> aws_cloud.aws_s3.test_bucket)[0].style.opacity: 0.0
+    }
+    2-run: {
+        title.label: Run
+        (aws_cloud.aws_iam.lambda_role -> aws_cloud.aws_s3.test_bucket)[0].style.opacity: 0.1
+        (aws_cloud.aws_iam.test_user -> aws_cloud.aws_iam.lambda_role)[0].style.opacity: 0.1
+        (aws_cloud.aws_iam.test_user -> local.aws_cli_container.aws_configuration.aws_credentials)[0].style.opacity: 0.1
+        (local.aws_cli_container.aws_cli_image -> local.aws_cli_container.aws_configuration.aws_credentials)[0].style.opacity: 0.1
+        (local.aws_cli_container.aws_cli_image <-> aws_cloud.aws_iam.lambda_role)[0].style.opacity: 1.0
+        (local.aws_cli_container.aws_cli_image -> local.aws_cli_container.aws_output.cred_json)[0].style.opacity: 1.0
+        (local.aws_cli_container.aws_output.cred_json -> local.local_lambda.lambda_module)[0].style.opacity: 1.0
+        (local.local_lambda.lambda_module -> aws_cloud.aws_s3.test_bucket)[0].style.opacity: 1.0
+    }
+}

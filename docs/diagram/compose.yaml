@@ -1,0 +1,15 @@
+services:
+  d2:
+    image: terrastruct/d2:latest
+    container_name: d2_watch
+    # user: "${UID:-1000}:${GID:-1000}"
+    volumes:
+      - ./src:/home/debian/src
+    working_dir: /home/debian/src
+    ports:
+      - "127.0.0.1:8080:8080"
+    command: ["--omit-version", "--animate-interval=5000", "-c", "--pad", "0", "input.d2", "diagram.svg"]
+    stdin_open: true
+    tty: true
+    restart: "no"
+      
