@@ -29,7 +29,7 @@ if (-not ($InvokeJsonPath)) {
 $JsonContent = Get-Content -Raw -Path $InvokeJsonPath | ConvertFrom-Json | ConvertTo-Json -Compress
 
 # Invoke the function locally
-Invoke-WebRequest -Uri "http://localhost:9000/2015-03-31/functions/function/invocations" -Method Post -Body $JsonContent -ContentType "application/json"
+Invoke-WebRequest -Uri "http://localhost:9000/2015-03-31/functions/function/invocations" -Method Post -Body $JsonContent -ContentType "application/json" -UseBasicParsing
 
 Write-Host "Finished"
 
